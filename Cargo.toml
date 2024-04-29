@@ -1,0 +1,23 @@
+[workspace]
+members = [
+  "./",
+  "plugin-api",
+  "plugin-a",
+]
+
+[package]
+edition = "2021"
+name = "stabby-plugin-demo"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log = "0.4.21"
+log4rs = "1.3.0"
+tokio = {version = "1.37", features = ["full"]}
+
+libloading = "0.8"
+stabby = {version = "4.0.5", features = ["libloading"]}
+
+plugin-api = {path = "plugin-api/"}

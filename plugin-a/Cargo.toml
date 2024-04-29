@@ -1,0 +1,29 @@
+#
+# Copyright (c) 2023 ZettaScale Technology
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License 2.0 which is available at
+# http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+# which is available at https://www.apache.org/licenses/LICENSE-2.0.
+#
+# SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+#
+# Contributors:
+#   Pierre Avital, <pierre.avital@me.com>
+#
+
+[package]
+edition = "2021"
+name = "plugin-a"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+log = "0.4.21"
+log4rs = "1.3.0"
+
+stabby = "4.0.5"
+
+plugin-api = {path = "../plugin-api/"}
