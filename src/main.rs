@@ -6,15 +6,8 @@ use plugin_api::{
 #[stabby::stabby]
 struct MyExecutorHost;
 
-impl MyExecutorHost {
-  async fn get_from_store(&self) -> InputDataset {
-    let mut rows = stabby::vec::Vec::new();
-    rows.push(1.0);
-    rows.push(2.0);
-    rows.push(3.0);
-    InputDataset { rows }
-  }
-}
+unsafe impl Send for MyExecutorHost {}
+unsafe impl Sync for MyExecutorHost {}
 
 impl ExecutorHost for MyExecutorHost {
   extern "C" fn get_input_dataset<'a>(
@@ -28,8 +21,15 @@ impl ExecutorHost for MyExecutorHost {
   }
 }
 
-unsafe impl Send for MyExecutorHost {}
-unsafe impl Sync for MyExecutorHost {}
+impl MyExecutorHost {
+  async fn get_from_store(&self) -> InputDataset {
+    let mut rows = stabby::vec::Vec::new();
+    rows.push(1.0);
+    rows.push(2.0);
+    rows.push(3.0);
+    InputDataset { rows }
+  }
+}
 
 async fn init_plugin() -> core::result::Result<Plugin, PluginError> {
   unsafe {
