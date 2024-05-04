@@ -18,5 +18,6 @@ name = "plugin-api"
 version = "0.1.0"
 
 [dependencies]
-stabby = "4.0.5"
+stabby = {version = "5.0.0"}
+
 thiserror = "1.0.59"

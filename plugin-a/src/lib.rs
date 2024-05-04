@@ -1,40 +1,27 @@
-use plugin_api::{
-  ExecutorHostDyn, ExecutorPlugin, Host, InputDataset, OutputDataset, Plugin, PluginError, Settings,
-};
+use plugin_api::{Host, HostTraitDyn, Plugin, PluginError, PluginTrait};
 
 #[stabby::stabby]
-struct MyPlugin(Host);
+struct MyPlugin {
+  host: Host,
+}
 
 unsafe impl Send for MyPlugin {}
 unsafe impl Sync for MyPlugin {}
 
-impl ExecutorPlugin for MyPlugin {
-  extern "C" fn execute<'a>(
-    &'a mut self, settings: Settings,
-  ) -> stabby::future::DynFuture<'a, OutputDataset> {
-    stabby::boxed::Box::new(async move {
-      log::info!("execute: settings: {:?}", settings);
-      let input_dataset = self.0.get_input_dataset(10, 10).await;
-      log::info!("got input dataset: {:?}", input_dataset);
-      self.calculate(input_dataset).await
-    })
-    .into()
-  }
-}
-
-impl MyPlugin {
-  async fn calculate(&mut self, input_dataset: InputDataset) -> OutputDataset {
-    let mut rows = stabby::vec::Vec::new();
-    for row in input_dataset.rows.iter() {
-      rows.push(row * 2.0);
-    }
-    OutputDataset { rows }
+impl PluginTrait for MyPlugin {
+  extern "C" fn call_from_host<'a>(&'a self, a: u64) -> stabby::future::DynFuture<'a, u64> {
+    stabby::boxed::Box::new(async move { self.host.call_from_plugin(a).await }).into()
   }
 }
 
 #[stabby::export]
-pub extern "C" fn init_plugin(host: Host) -> stabby::result::Result<Plugin, PluginError> {
-  log4rs::init_file("config/log4rs.yaml", Default::default()).unwrap();
-
-  stabby::result::Result::Ok(stabby::boxed::Box::new(MyPlugin(host)).into())
+extern "C" fn init_plugin(host: Host) -> stabby::result::Result<Plugin, PluginError> {
+  stabby::result::Result::Ok(stabby::boxed::Box::new(MyPlugin { host }).into())
 }
+
+const _: () = {
+  assert!(MyPlugin::has_optimal_layout());
+  stabby::abi::assert_stable::<Plugin>();
+  stabby::abi::assert_stable::<PluginError>();
+  stabby::abi::assert_stable::<stabby::result::Result<Plugin, PluginError>>();
+};

@@ -1,43 +1,15 @@
-#[stabby::stabby]
-#[derive(Debug, Default)]
-pub struct Settings {
-  pub max_rows: u32,
-}
-unsafe impl Send for Settings {}
-unsafe impl Sync for Settings {}
-
-#[stabby::stabby]
-#[derive(Debug, Default)]
-pub struct InputDataset {
-  pub rows: stabby::vec::Vec<f64>,
-}
-unsafe impl Send for InputDataset {}
-unsafe impl Sync for InputDataset {}
-
-#[stabby::stabby]
-#[derive(Debug, Default)]
-pub struct OutputDataset {
-  pub rows: stabby::vec::Vec<f64>,
-}
-unsafe impl Send for OutputDataset {}
-unsafe impl Sync for OutputDataset {}
-
 #[stabby::stabby(checked)]
-pub trait ExecutorHost {
-  extern "C" fn get_input_dataset<'a>(
-    &'a self, n: u32, limit: u32,
-  ) -> stabby::future::DynFuture<'a, InputDataset>;
+pub trait HostTrait {
+  extern "C" fn call_from_plugin<'a>(&'a self, a: u64) -> stabby::future::DynFuture<'a, u64>;
 }
 
 #[stabby::stabby(checked)]
-pub trait ExecutorPlugin {
-  extern "C" fn execute<'a>(
-    &'a mut self, settings: Settings,
-  ) -> stabby::future::DynFuture<'a, OutputDataset>;
+pub trait PluginTrait {
+  extern "C" fn call_from_host<'a>(&'a self, a: u64) -> stabby::future::DynFuture<'a, u64>;
 }
 
-pub type Host = stabby::dynptr!(stabby::sync::Arc<dyn ExecutorHost>);
-pub type Plugin = stabby::dynptr!(stabby::boxed::Box<dyn ExecutorPlugin>);
+pub type Host = stabby::dynptr!(stabby::sync::Arc<dyn HostTrait>);
+pub type Plugin = stabby::dynptr!(stabby::boxed::Box<dyn PluginTrait>);
 
 #[stabby::stabby]
 #[repr(C)]
